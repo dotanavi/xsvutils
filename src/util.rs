@@ -34,3 +34,14 @@ pub fn trim_newline(bytes: &mut Vec<u8>) {
         bytes.pop();
     }
 }
+
+/// バイト列の末尾から改行コードを取り除く
+pub fn trim_newline_ref<'a>(mut bytes: &'a [u8]) -> &'a [u8] {
+    if bytes.len() > 0 && bytes[bytes.len() - 1] == b'\n' {
+        bytes = &bytes[0..bytes.len() - 1];
+    }
+    if bytes.len() > 0 && bytes[bytes.len() - 1] == b'\r' {
+        bytes = &bytes[0..bytes.len() - 1];
+    }
+    return bytes;
+}
