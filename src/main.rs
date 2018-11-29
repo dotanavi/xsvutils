@@ -13,6 +13,7 @@ use std::env;
 mod util;
 mod command;
 mod cut;
+mod sort;
 mod uriparams;
 
 fn run<C: command::Command>(rest: Vec<String>) {
@@ -33,6 +34,7 @@ fn main() {
     if let Some(sub_command) = sub_command {
         match sub_command.as_str() {
             "cut" => run::<cut::CutCommand>(rest),
+            "sort" => run::<sort::SortCommand>(rest),
             "uriparams" => run::<uriparams::UriParamsCommand>(rest),
             _ => die!("unknown subcommand: {}", &sub_command),
         }
