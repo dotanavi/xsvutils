@@ -355,6 +355,10 @@ sub parseQuery {
                 $next_command = {command => "sort", cols => undef};
                 $last_command = $a;
 
+            } elsif ($a eq "sort-rs") {
+                $next_command = {command => "sort-rs", cols => undef, buffer_size => undef};
+                $last_command = $a;
+
             } elsif ($a eq "paste") {
                 $next_command = {command => "paste", file => undef};
                 $last_command = $a;
@@ -992,12 +996,18 @@ sub parseCommandOptionUpdate {
 
 sub parseCommandOptionSort {
     my ($a, $argv, $command_name, $curr_command, $input) = @_;
-    return '' unless ($command_name eq "sort");
+    return '' unless ($command_name eq "sort") || ($command_name eq "sort-rs");
 
     if ($a eq "--col" || $a eq "--cols" || $a eq "--columns") {
         die "option $a needs an argument" unless (@$argv);
         die "duplicated option $a" if defined($curr_command->{cols});
         $curr_command->{cols} = shift(@$argv);
+        return 1;
+    }
+    if ($a eq "--buffer-size") {
+        die "option $a needs an argument" unless (@$argv);
+        die "duplicated option $a" if defined($curr_command->{buffer_size});
+        $curr_command->{buffer_size} = shift(@$argv);
         return 1;
     }
     if (!defined($curr_command->{cols}) && $a !~ /\A-/) {
@@ -1508,6 +1518,12 @@ sub validateParams {
             } else {
                 push(@$commands2, @{parseSortParams([])});
             }
+
+        } elsif ($command_name eq "sort-rs") {
+            if (!defined($curr_command->{cols})) {
+                die "subcommand \`sort-rs\` needs --cols option";
+            }
+            push(@$commands2, $curr_command);
 
         } elsif ($command_name eq "paste") {
             if (!defined($curr_command->{file})) {
@@ -2184,6 +2200,15 @@ sub build_ircode_command {
             my $count  = escape_for_bash($curr_command->{count});
             my $arg = '-f' . ($count + 1) . '-';
             push(@$ircode, ["cmd", "cut $arg"]);
+
+        } elsif ($command_name eq "sort-rs") {
+            my $col = escape_for_bash($curr_command->{cols});
+            my $option = "--col $col";
+            if (defined($curr_command->{buffer_size})) {
+                my $buffer_size = escape_for_bash($curr_command->{buffer_size});
+                $option .= " --buffer-size $buffer_size";
+            }
+            push(@$ircode, ["cmd", "\$TOOL_DIR/xsvutils-rs sort $option"]);
 
         } elsif ($command_name eq "uriparams") {
             my $option = "";

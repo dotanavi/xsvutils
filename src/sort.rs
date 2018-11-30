@@ -61,7 +61,8 @@ impl CmdOpt {
                     let size = util::pop_first_or_else(&mut args, || {
                         die!("option --buffer-size needs an argument")
                     });
-                    opt.buffer_size = size.as_str().parse().unwrap();
+                    let buffer_size: usize = size.as_str().parse().unwrap();
+                    opt.buffer_size = buffer_size * MB;
                 }
                 _ => die!("Unknown argument: {}", &arg),
             }
